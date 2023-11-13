@@ -32,6 +32,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+
 app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
   res.render("urls_show", templateVars);
@@ -44,9 +45,17 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${newGeneratedID}`);
 });
 
+app.post("/urls/:id/delete", (req, res) => {
+  console.log(req.params.id, urlDatabase);
+  delete(urlDatabase[req.params.id]);
+  res.redirect("/urls");
+});
+
 app.get("/u/:id", (req, res) => {
   res.redirect(urlDatabase[req.params.id]);
 });
+
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
