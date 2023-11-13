@@ -37,6 +37,27 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+app.post("/urls", (req, res) => {
+  console.log(req.body);
+  res.send("ok");
+});
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+
+const generateRandomString = () => {
+  // establish possible letters
+  const possibleCharacters = "abcdefghijklmonpqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let randomString = "";
+
+  for (let i = 0; i < 6; i++) {
+    let possibleCharactersLength = possibleCharacters.length - 1;
+    let randomIndex = Math.floor(Math.random() * possibleCharactersLength);
+
+    randomString += possibleCharacters[randomIndex];
+  }
+  
+  return randomString;
+};
