@@ -46,7 +46,7 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-
+// return a 6 character long random string of alphanumeric characters
 const generateRandomString = () => {
   // establish possible letters
   const possibleCharacters = "abcdefghijklmonpqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -58,6 +58,6 @@ const generateRandomString = () => {
 
     randomString += possibleCharacters[randomIndex];
   }
-  
+
   return randomString;
 };
