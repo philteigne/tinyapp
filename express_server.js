@@ -38,6 +38,11 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+app.post("/login", (req, res) => {
+  res.cookie("username", req.body.username);
+  res.redirect("/urls")
+});
+
 app.post("/urls/:id/edit", (req, res) => {
   res.redirect(`/urls/${req.params.id}`);
 });
@@ -53,7 +58,6 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log("/urls", req.body);
   let newGeneratedID = generateRandomString();
   urlDatabase[newGeneratedID] = req.body.longURL;
   res.redirect(`/urls/${newGeneratedID}`);
