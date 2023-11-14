@@ -38,24 +38,27 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+
+app.post("/urls/:id/delete", (req, res) => {
+  delete(urlDatabase[req.params.id]);
+  res.redirect("/urls");
+});
+
+app.post("/urls/:id", (req, res) => {
+  urlDatabase[req.params.id] = req.body.longURL;
+  console.log(urlDatabase);
+});
+
 app.post("/urls", (req, res) => {
-  console.log(req.body);
+  console.log("/urls", req.body);
   let newGeneratedID = generateRandomString();
   urlDatabase[newGeneratedID] = req.body.longURL;
   res.redirect(`/urls/${newGeneratedID}`);
 });
 
-app.post("/urls/:id/delete", (req, res) => {
-  console.log(req.params.id, urlDatabase);
-  delete(urlDatabase[req.params.id]);
-  res.redirect("/urls");
-});
-
 app.get("/u/:id", (req, res) => {
   res.redirect(urlDatabase[req.params.id]);
 });
-
-
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
