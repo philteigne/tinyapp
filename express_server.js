@@ -52,9 +52,15 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("urls");
+});
+
 app.post("/login", (req, res) => {
   res.cookie("username", req.body.username);
-  res.redirect("/urls");
+  res.redirect("urls");
 });
 
 app.post("/urls/:id/edit", (req, res) => {
