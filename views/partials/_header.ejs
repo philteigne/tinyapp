@@ -19,10 +19,8 @@
       </div>
     </div>
     <% if (user === undefined) { %>
-    <form action="/login" method="POST">   
-      <input placeholder="Username" name="username">
-      <button type="submit">Login</button>
-    </form>
+      <a href="../login">Login</a>
+      <a href="../register">Register</a>
     <% } else { %>
     <a>Logged in as: </a><%= user.email %>
     <form action="/logout" method="POST">
