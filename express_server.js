@@ -1,5 +1,6 @@
 const express = require("express");
 const cookieParser = require('cookie-parser');
+const { Template } = require("ejs");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -73,6 +74,13 @@ app.get("/register", (req, res) => {
   };
   console.log("/register", templateVars.user);
   res.render("register", templateVars);
+});
+
+app.get("/login", (req, res) => {
+  const templateVars = {
+    user: users[req.cookies["userID"]]
+  };
+  res.render("login", templateVars);
 });
 
 
