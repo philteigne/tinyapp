@@ -26,16 +26,20 @@ const users = {
 
 app.use(express.urlencoded({ extended: true }));
 
+//  GET
+//  HOME PAGE
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
+});
+
+//  GET
+//  URLs
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
 });
 
 app.get("/urls", (req, res) => {
@@ -67,6 +71,8 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+//  GET
+//  LOGIN AND REGISTER
 app.get("/register", (req, res) => {
   const templateVars = {
     user: users[req.cookies["userID"]]
@@ -83,6 +89,8 @@ app.get("/login", (req, res) => {
 });
 
 
+//  POST
+//  LOGIN AND REGISTER
 app.post("/register", (req, res) => {
   const newUserRandomID = generateRandomString();
   const newUserEmail = req.body.email;
@@ -116,6 +124,8 @@ app.post("/login", (req, res) => {
   res.redirect("urls");
 });
 
+//  POST
+//  URLs
 app.post("/urls/:id/edit", (req, res) => {
   res.redirect(`/urls/${req.params.id}`);
 });
@@ -140,9 +150,13 @@ app.get("/u/:id", (req, res) => {
   res.redirect(urlDatabase[req.params.id]);
 });
 
+
+//  Start server
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+//  BUILT IN FUNCTIONS
 
 // return a 6 character long random string of alphanumeric characters
 const generateRandomString = () => {
