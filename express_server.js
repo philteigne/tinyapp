@@ -80,6 +80,10 @@ app.post("/register", (req, res) => {
   const newUserRandomID = generateRandomString();
   const newUserEmail = req.body.email;
   const newUserPassword = req.body.password;
+
+  if (newUserEmail === "" || newUserPassword === "") {
+    res.sendStatus(400);
+  }
   users[newUserRandomID] = { id: newUserRandomID, email: newUserEmail, password: newUserPassword };
   res.cookie("userID", newUserRandomID);
   console.log(users);
@@ -138,4 +142,15 @@ const generateRandomString = () => {
   }
 
   return randomString;
+};
+
+//  search through an object's searchProperty values
+//  if searchKey is found return true
+const userLookup = (searchKey, searchProperty, object) => {
+  for (let i in object) {
+    if (object[i][searchProperty] === searchKey) {
+      return object[i];
+    }
+  }
+  return null;
 };
