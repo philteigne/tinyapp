@@ -122,7 +122,7 @@ app.post("/logout", (req, res) => {
 app.post("/login", (req, res) => {
   const userEmail = req.body.email;
   const userPassword = req.body.password;
-  const valueLookup = keyValueLookup(userEmail, 'email', users)
+  const valueLookup = keyValueLookup(userEmail, 'email', users);
 
   if (!valueLookup) {
     //  email does not exist in users object
