@@ -115,13 +115,29 @@ app.post("/register", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");  // change to userID
-  res.redirect("urls");
+  res.clearCookie("userID");  // change to userID
+  res.redirect("login");
 });
 
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
-  res.redirect("urls");
+  const userEmail = req.body.email;
+  const userPassword = req.body.password;
+  const valueLookup = keyValueLookup(userEmail, 'email', users)
+
+  if (!valueLookup) {
+    //  email does not exist in users object
+    res.sendStatus(403);
+  }
+
+  if (valueLookup) {
+    //  email exists in users object
+    if (valueLookup.password === userPassword) {
+      res.cookie("userID", valueLookup.id);
+      res.redirect("urls");
+    }
+    res.sendStatus(403);
+  }
+
 });
 
 //  POST
