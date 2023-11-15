@@ -11,6 +11,19 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
+
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
@@ -25,10 +38,9 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-
 app.get("/urls", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"],
+    user: users[req.cookies["UserID"]],
     urls: urlDatabase,
     // ... any other vars
 
@@ -52,6 +64,23 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+app.get("/register", (req, res) => {
+  const templateVars = {
+    username: req.cookies["username"]
+  };
+  res.render("register", templateVars);
+});
+
+
+app.post("/register", (req, res) => {
+  const newUserRandomID = generateRandomString();
+  const newUserEmail = req.body.email;
+  const newUserPassword = req.body.password;
+  users[newUserRandomID] = { id: newUserRandomID, email: newUserEmail, password: newUserPassword };
+  res.cookie("userID", newUserRandomID);
+  console.log(users);
+  res.redirect("urls");
+});
 
 app.post("/logout", (req, res) => {
   res.clearCookie("username");
