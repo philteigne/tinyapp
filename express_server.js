@@ -81,13 +81,22 @@ app.post("/register", (req, res) => {
   const newUserEmail = req.body.email;
   const newUserPassword = req.body.password;
 
-  if (newUserEmail === "" || newUserPassword === "") {
+  if (!newUserEmail || !newUserPassword) {
+    console.log("empty user or password");
     res.sendStatus(400);
   }
-  users[newUserRandomID] = { id: newUserRandomID, email: newUserEmail, password: newUserPassword };
-  res.cookie("userID", newUserRandomID);
-  console.log(users);
-  res.redirect("urls");
+
+  if (keyValueLookup(newUserEmail, "email", users)) {
+    console.log("already exists", keyValueLookup(newUserEmail, "email", users));
+    res.sendStatus(400);
+  }
+
+  if (!keyValueLookup(newUserEmail, "email", users) && newUserEmail && newUserPassword) {
+    users[newUserRandomID] = { id: newUserRandomID, email: newUserEmail, password: newUserPassword };
+    res.cookie("userID", newUserRandomID);
+    console.log("users", users);
+    res.redirect("urls");
+  }
 });
 
 app.post("/logout", (req, res) => {
@@ -145,8 +154,9 @@ const generateRandomString = () => {
 };
 
 //  search through an object's searchProperty values
-//  if searchKey is found return true
-const userLookup = (searchKey, searchProperty, object) => {
+//  if searchKey is found return key that contains it
+//  if not found return null
+const keyValueLookup = (searchKey, searchProperty, object) => {
   for (let i in object) {
     if (object[i][searchProperty] === searchKey) {
       return object[i];
