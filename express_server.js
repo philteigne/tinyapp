@@ -77,6 +77,12 @@ app.get("/register", (req, res) => {
   const templateVars = {
     user: users[req.cookies["userID"]]
   };
+  
+  if (req.cookies["userID"] !== undefined) {
+    res.redirect("urls");
+    return;
+  }
+
   console.log("/register", templateVars.user);
   res.render("register", templateVars);
 });
@@ -85,6 +91,12 @@ app.get("/login", (req, res) => {
   const templateVars = {
     user: users[req.cookies["userID"]]
   };
+
+  if (req.cookies["userID"] !== undefined) {
+    res.redirect("urls");
+    return;
+  }
+  
   res.render("login", templateVars);
 });
 
