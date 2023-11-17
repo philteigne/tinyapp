@@ -1,3 +1,4 @@
+/* eslint-disable no-prototype-builtins */
 const express = require("express");
 const cookieParser = require('cookie-parser');
 const app = express();
@@ -73,6 +74,11 @@ app.get("/urls/:id", (req, res) => {
     longURL: urlDatabase[req.params.id],
     user: users[req.cookies["userID"]]
   };
+
+  if (!urlDatabase.hasOwnProperty(req.params.id)) {
+    res.send("<html><body>Specified shortened URL does not exist</body></html>");
+    return;
+  }
   console.log("/urls/:id", templateVars.user);
   res.render("urls_show", templateVars);
 });
