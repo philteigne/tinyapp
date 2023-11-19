@@ -88,7 +88,11 @@ app.get("/urls/:id", (req, res) => {
     res.redirect("/login");
     return;
   }
-  
+
+  if (req.cookies["userID"] !== urlDatabase[req.params.id].userID) {
+    res.send("<html><body>This is URL does not belong to you.</body></html>");
+  }
+
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
