@@ -8,8 +8,14 @@ app.set("view engine", "ejs");
 app.use(cookieParser());
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b2xVn2: {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "aJ481W"
+  },
+  i3BoGr: {
+    longURL: "http://www.google.com",
+    userID: "aJ481W"
+  }
 };
 
 const users = {
@@ -71,7 +77,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id,
-    longURL: urlDatabase[req.params.id],
+    longURL: urlDatabase[req.params.id].longURL,
     user: users[req.cookies["userID"]]
   };
 
@@ -176,7 +182,7 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.post("/urls/:id", (req, res) => {
-  urlDatabase[req.params.id] = req.body.longURL;
+  urlDatabase[req.params.id].longURL = req.body.longURL;
   res.redirect(`/urls/${req.params.id}`);
 });
 
@@ -189,7 +195,7 @@ app.post("/urls", (req, res) => {
   }
 
   let newGeneratedID = generateRandomString();
-  urlDatabase[newGeneratedID] = req.body.longURL;
+  urlDatabase[newGeneratedID].longURL = req.body.longURL;
 
   res.redirect(`/urls/${newGeneratedID}`);
 });
