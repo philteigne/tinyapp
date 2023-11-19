@@ -194,11 +194,41 @@ app.post("/urls/:id/edit", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
+  if (req.cookies.userID === undefined) {
+    res.send("<html><body>If this URL belongs to you, please log in to delete it.</body></html>");
+    return;
+  }
+
+  if (urlDatabase[req.params.id] === undefined) {
+    res.send("<html><body>That URL does not exist.</body></html>");
+    return;
+  }
+
+  if (urlDatabase[req.params.id].userID !== req.cookies.userID) {
+    res.send("<html><body>That URL does not belong to you.</body></html>");
+    return;
+  }
+
   delete(urlDatabase[req.params.id]);
   res.redirect("/urls");
 });
 
 app.post("/urls/:id", (req, res) => {
+  
+  if (req.cookies.userID === undefined) {
+    res.send("<html><body>If this URL belongs to you, please log in to view it.</body></html>");
+    return;
+  }
+
+  if (urlDatabase[req.params.id] === undefined) {
+    res.send("<html><body>That URL does not exist.</body></html>");
+    return;
+  }
+
+  if (urlDatabase[req.params.id].userID !== req.cookies.userID) {
+    res.send("<html><body>That URL does not belong to you.</body></html>");
+    return;
+  }
   urlDatabase[req.params.id].longURL = req.body.longURL;
   res.redirect(`/urls/${req.params.id}`);
 });
