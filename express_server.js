@@ -195,7 +195,7 @@ app.post("/urls", (req, res) => {
   }
 
   let newGeneratedID = generateRandomString();
-  urlDatabase[newGeneratedID].longURL = req.body.longURL;
+  urlDatabase[newGeneratedID] = { longURL: req.body.longURL };
 
   res.redirect(`/urls/${newGeneratedID}`);
 });
