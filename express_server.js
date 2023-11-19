@@ -39,6 +39,9 @@ const analytics = {
   uniqueVisitors: {
 
   },
+  visitorLog: {
+
+  },
 };
 
 const users = {
@@ -121,6 +124,7 @@ app.get("/urls/:id", (req, res) => {
     user: users[req.session.user_id],
     clickCount: analytics.clickCount[req.params.id],
     uniqueVisitors: Object.keys(analytics.uniqueVisitors).length,
+    visitorEvents: analytics.visitorLog,
   };
   console.log(templateVars);
 
@@ -250,6 +254,11 @@ app.get("/u/:id", (req, res) => {
   }
 
   analytics.uniqueVisitors[req.session.user_id] ++;
+
+  //  TIMESTAMP OF USAGE AND VISITOR ID
+  visitorID = "visitorID_" + generateRandomString();
+
+  analytics.visitorLog[visitorID] = new Date();
 
   res.redirect(urlDatabase[req.params.id].longURL);
 });
