@@ -50,12 +50,20 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+
+  if (req.cookies["userID"] === undefined) {
+    res.send("<html><body>Please log in to view your shortened URLs</body></html>\n");
+    res.redirect("/login");
+    return;
+  }
+
   const templateVars = {
     user: users[req.cookies["userID"]],
-    urls: urlDatabase,
     // ... any other vars
-
   };
+
+  templateVars.urls = filter2DObject(urlDatabase, "userID", req.cookies["userID"]);
+
   console.log("/urls", templateVars.user);
   res.render("urls_index", templateVars);
 });
@@ -75,6 +83,12 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
+
+  if (req.cookies["userID"] === undefined) {
+    res.redirect("/login");
+    return;
+  }
+  
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
@@ -101,7 +115,6 @@ app.get("/register", (req, res) => {
     return;
   }
 
-  console.log("/register", templateVars.user);
   res.render("register", templateVars);
 });
 
@@ -238,4 +251,19 @@ const keyValueLookup = (searchKey, searchProperty, object) => {
     }
   }
   return null;
+};
+
+//  search through 2D object for matching key value pair
+//  return object containing all matches
+const filter2DObject = (object, searchKey, searchKeyValue) => {
+  const matchingKeyObject = {};
+
+  const objectKeys = Object.keys(object);
+  for (let i of objectKeys) {
+    if (object[i][searchKey] === searchKeyValue) {
+      matchingKeyObject[i] = object[i];
+    }
+  }
+
+  return matchingKeyObject;
 };
