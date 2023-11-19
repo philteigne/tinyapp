@@ -105,17 +105,20 @@ app.get("/urls/:id", (req, res) => {
     res.send("<html><body>This is URL does not belong to you.</body></html>");
   }
 
+  let countCookieReference = `clickCount-${req.params.id}`;
+
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
-    user: users[req.session.user_id]
+    user: users[req.session.user_id],
+    clickCount: req.session[countCookieReference],
   };
 
   if (!urlDatabase.hasOwnProperty(req.params.id)) {
     res.send("<html><body>Specified shortened URL does not exist</body></html>");
     return;
   }
-  console.log("/urls/:id", templateVars.user);
+
   res.render("urls_show", templateVars);
 });
 
@@ -223,7 +226,15 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  res.redirect(urlDatabase[req.params.id]);
+  let linkCookieCountName = `clickCount-${req.params.id}`;
+  
+  if (req.session[linkCookieCountName] === undefined) {
+    req.session[linkCookieCountName] = 0;
+  }
+  
+  req.session[linkCookieCountName] ++;
+
+  res.redirect(urlDatabase[req.params.id].longURL);
 });
 
 //  PUT
@@ -243,6 +254,7 @@ app.put("/urls/:id", (req, res) => {
     res.send("<html><body>That URL does not belong to you.</body></html>");
     return;
   }
+
   urlDatabase[req.params.id].longURL = req.body.longURL;
   res.redirect(`/urls/${req.params.id}`);
 });
