@@ -32,6 +32,13 @@
           <% } else { %>
             <h6><%= 0 %></h6>
           <% } %>
+          <h5 class="card-title">Visitor log:</h5> 
+          <% for (let i of Object.keys(visitorEvents)) { %>
+            <tr>
+              <td><%= i %></td>
+              <td><%= visitorEvents[i] %></td>
+            </tr>
+          <% } %>
       </div>
       <div class="card-footer text-muted"></div>
     </div>
