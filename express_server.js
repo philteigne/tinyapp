@@ -1,6 +1,7 @@
 /* eslint-disable no-prototype-builtins */
 const express = require("express");
 const cookieSession = require('cookie-session');
+const methodOverride = require('method-override');
 const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080; // default port 8080
@@ -17,6 +18,8 @@ app.use(cookieSession({
   // Cookie Options
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
+app.use(methodOverride('_method'));
+app.use(express.urlencoded({ extended: true }));
 
 const urlDatabase = {
   b2xVn2: {
@@ -41,8 +44,6 @@ const users = {
     password: "dishwasher-funk",
   },
 };
-
-app.use(express.urlencoded({ extended: true }));
 
 //  GET
 //  HOME PAGE
@@ -207,7 +208,48 @@ app.post("/urls/:id/edit", (req, res) => {
   res.redirect(`/urls/${req.params.id}`);
 });
 
-app.post("/urls/:id/delete", (req, res) => {
+app.post("/urls", (req, res) => {
+
+  if (req.session.user_id === undefined) {
+    res.send("<html><body>Please log in to shorten a URL</body></html>\n");
+    res.redirect("/login");
+    return;
+  }
+
+  let newGeneratedID = generateRandomString();
+  urlDatabase[newGeneratedID] = { longURL: req.body.longURL, userID: req.session.user_id };
+
+  res.redirect(`/urls/${newGeneratedID}`);
+});
+
+app.get("/u/:id", (req, res) => {
+  res.redirect(urlDatabase[req.params.id]);
+});
+
+//  PUT
+//  URLs
+app.put("/urls/:id", (req, res) => {
+  if (req.session.user_id === undefined) {
+    res.send("<html><body>If this URL belongs to you, please log in to view it.</body></html>");
+    return;
+  }
+
+  if (urlDatabase[req.params.id] === undefined) {
+    res.send("<html><body>That URL does not exist.</body></html>");
+    return;
+  }
+
+  if (urlDatabase[req.params.id].userID !== req.session.user_id) {
+    res.send("<html><body>That URL does not belong to you.</body></html>");
+    return;
+  }
+  urlDatabase[req.params.id].longURL = req.body.longURL;
+  res.redirect(`/urls/${req.params.id}`);
+});
+
+//  DELETE
+//  URLs
+app.delete("/urls/:id/delete", (req, res) => {
   if (req.session.user_id === undefined) {
     res.send("<html><body>If this URL belongs to you, please log in to delete it.</body></html>");
     return;
@@ -227,43 +269,6 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-app.post("/urls/:id", (req, res) => {
-  
-  if (req.session.user_id === undefined) {
-    res.send("<html><body>If this URL belongs to you, please log in to view it.</body></html>");
-    return;
-  }
-
-  if (urlDatabase[req.params.id] === undefined) {
-    res.send("<html><body>That URL does not exist.</body></html>");
-    return;
-  }
-
-  if (urlDatabase[req.params.id].userID !== req.session.user_id) {
-    res.send("<html><body>That URL does not belong to you.</body></html>");
-    return;
-  }
-  urlDatabase[req.params.id].longURL = req.body.longURL;
-  res.redirect(`/urls/${req.params.id}`);
-});
-
-app.post("/urls", (req, res) => {
-
-  if (req.session.user_id === undefined) {
-    res.send("<html><body>Please log in to shorten a URL</body></html>\n");
-    res.redirect("/login");
-    return;
-  }
-
-  let newGeneratedID = generateRandomString();
-  urlDatabase[newGeneratedID] = { longURL: req.body.longURL };
-
-  res.redirect(`/urls/${newGeneratedID}`);
-});
-
-app.get("/u/:id", (req, res) => {
-  res.redirect(urlDatabase[req.params.id]);
-});
 
 
 //  Start server
