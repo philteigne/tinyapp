@@ -32,6 +32,15 @@ const urlDatabase = {
   }
 };
 
+const analytics = {
+  clickCount: {
+    // url_id: number of clicks
+  },
+  uniqueVisitors: {
+
+  },
+};
+
 const users = {
   userRandomID: {
     id: "userRandomID",
@@ -105,14 +114,15 @@ app.get("/urls/:id", (req, res) => {
     res.send("<html><body>This is URL does not belong to you.</body></html>");
   }
 
-  let countCookieReference = `clickCount-${req.params.id}`;
-
+  console.log(analytics);
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
     user: users[req.session.user_id],
-    clickCount: req.session[countCookieReference],
+    clickCount: analytics.clickCount[req.params.id],
+    uniqueVisitors: Object.keys(analytics.uniqueVisitors).length,
   };
+  console.log(templateVars);
 
   if (!urlDatabase.hasOwnProperty(req.params.id)) {
     res.send("<html><body>Specified shortened URL does not exist</body></html>");
@@ -226,13 +236,20 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  let linkCookieCountName = `clickCount-${req.params.id}`;
-  
-  if (req.session[linkCookieCountName] === undefined) {
-    req.session[linkCookieCountName] = 0;
+
+  // COUNT TOTAL CLICKS
+  if (analytics.clickCount[req.params.id] === undefined) {
+    analytics.clickCount[req.params.id] = 0;
   }
   
-  req.session[linkCookieCountName] ++;
+  analytics.clickCount[req.params.id] ++;
+
+  //  COUNT UNIQUE VISITORS
+  if (analytics.uniqueVisitors[req.session.user_id] === undefined) {
+    analytics.uniqueVisitors[req.session.user_id] = 0;
+  }
+
+  analytics.uniqueVisitors[req.session.user_id] ++;
 
   res.redirect(urlDatabase[req.params.id].longURL);
 });
