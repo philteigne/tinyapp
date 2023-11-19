@@ -1,12 +1,18 @@
 /* eslint-disable no-prototype-builtins */
 const express = require("express");
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['alphabeta'],
+
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
 
 const urlDatabase = {
   b2xVn2: {
@@ -52,18 +58,18 @@ app.get("/urls.json", (req, res) => {
 
 app.get("/urls", (req, res) => {
 
-  if (req.cookies["userID"] === undefined) {
+  if (req.session.user_id === undefined) {
     res.send("<html><body>Please log in to view your shortened URLs</body></html>\n");
     res.redirect("/login");
     return;
   }
 
   const templateVars = {
-    user: users[req.cookies["userID"]],
+    user: users[req.session.user_id],
     // ... any other vars
   };
 
-  templateVars.urls = filter2DObject(urlDatabase, "userID", req.cookies["userID"]);
+  templateVars.urls = filter2DObject(urlDatabase, "userID", req.session.user_id);
 
   console.log("/urls", templateVars.user);
   res.render("urls_index", templateVars);
@@ -71,10 +77,10 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    user: users[req.cookies["userID"]],
+    user: users[req.session.user_id],
   };
 
-  if (req.cookies["userID"] === undefined) {
+  if (req.session.user_id === undefined) {
     res.redirect("/login");
     return;
   }
@@ -85,19 +91,19 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
 
-  if (req.cookies["userID"] === undefined) {
+  if (req.session.user_id === undefined) {
     res.redirect("/login");
     return;
   }
 
-  if (req.cookies["userID"] !== urlDatabase[req.params.id].userID) {
+  if (req.session.user_id !== urlDatabase[req.params.id].userID) {
     res.send("<html><body>This is URL does not belong to you.</body></html>");
   }
 
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
-    user: users[req.cookies["userID"]]
+    user: users[req.session.user_id]
   };
 
   if (!urlDatabase.hasOwnProperty(req.params.id)) {
@@ -112,10 +118,10 @@ app.get("/urls/:id", (req, res) => {
 //  LOGIN AND REGISTER
 app.get("/register", (req, res) => {
   const templateVars = {
-    user: users[req.cookies["userID"]]
+    user: users[req.session.user_id]
   };
   
-  if (req.cookies["userID"] !== undefined) {
+  if (req.session.user_id !== undefined) {
     res.redirect("urls");
     return;
   }
@@ -124,14 +130,15 @@ app.get("/register", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  const templateVars = {
-    user: users[req.cookies["userID"]]
-  };
-
-  if (req.cookies["userID"] !== undefined) {
+  if (req.session.user_id !== undefined) {
     res.redirect("urls");
     return;
   }
+
+  // pass through undefined if no current session
+  const templateVars = {
+    user: undefined
+  };
 
   res.render("login", templateVars);
 });
@@ -156,14 +163,14 @@ app.post("/register", (req, res) => {
 
   if (!keyValueLookup(newUserEmail, "email", users) && newUserEmail && newUserPassword) {
     users[newUserRandomID] = { id: newUserRandomID, email: newUserEmail, password: newUserPassword };
-    res.cookie("userID", newUserRandomID);
+    req.session.user_id = newUserRandomID;
     console.log("users", users);
     res.redirect("urls");
   }
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("userID");  // change to userID
+  req.session = null;  // kill session on logout
   res.redirect("login");
 });
 
@@ -185,7 +192,7 @@ app.post("/login", (req, res) => {
   }
 
   // email exists and password matches
-  res.cookie("userID", valueLookup.id);
+  req.session.user_id = valueLookup.id;
   res.redirect("urls");
 
 });
@@ -197,7 +204,7 @@ app.post("/urls/:id/edit", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  if (req.cookies.userID === undefined) {
+  if (req.session.user_id === undefined) {
     res.send("<html><body>If this URL belongs to you, please log in to delete it.</body></html>");
     return;
   }
@@ -207,7 +214,7 @@ app.post("/urls/:id/delete", (req, res) => {
     return;
   }
 
-  if (urlDatabase[req.params.id].userID !== req.cookies.userID) {
+  if (urlDatabase[req.params.id].userID !== req.session.user_id) {
     res.send("<html><body>That URL does not belong to you.</body></html>");
     return;
   }
@@ -218,7 +225,7 @@ app.post("/urls/:id/delete", (req, res) => {
 
 app.post("/urls/:id", (req, res) => {
   
-  if (req.cookies.userID === undefined) {
+  if (req.session.user_id === undefined) {
     res.send("<html><body>If this URL belongs to you, please log in to view it.</body></html>");
     return;
   }
@@ -228,7 +235,7 @@ app.post("/urls/:id", (req, res) => {
     return;
   }
 
-  if (urlDatabase[req.params.id].userID !== req.cookies.userID) {
+  if (urlDatabase[req.params.id].userID !== req.session.user_id) {
     res.send("<html><body>That URL does not belong to you.</body></html>");
     return;
   }
@@ -238,7 +245,7 @@ app.post("/urls/:id", (req, res) => {
 
 app.post("/urls", (req, res) => {
 
-  if (req.cookies["userID"] === undefined) {
+  if (req.session.user_id === undefined) {
     res.send("<html><body>Please log in to shorten a URL</body></html>\n");
     res.redirect("/login");
     return;
