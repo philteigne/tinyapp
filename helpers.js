@@ -23,7 +23,7 @@ const keyValueLookup = (searchKey, searchProperty, object) => {
       return object[i];
     }
   }
-  return null;
+  return undefined;
 };
 
 //  search through 2D object for matching key value pair
