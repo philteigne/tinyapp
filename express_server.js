@@ -5,6 +5,10 @@ const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080; // default port 8080
 
+//  helper functions
+const { generateRandomString, keyValueLookup, filter2DObject } = require('./helpers');
+
+
 app.set("view engine", "ejs");
 app.use(cookieSession({
   name: 'session',
