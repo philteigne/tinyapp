@@ -41,4 +41,4 @@ const filter2DObject = (object, searchKey, searchKeyValue) => {
   return matchingKeyObject;
 };
 
-exports.module = { generateRandomString, keyValueLookup, filter2DObject };
+module.exports = { generateRandomString, keyValueLookup, filter2DObject };
