@@ -1,6 +1,7 @@
 /* eslint-disable no-prototype-builtins */
 const express = require("express");
 const cookieParser = require('cookie-parser');
+const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -141,7 +142,7 @@ app.get("/login", (req, res) => {
 app.post("/register", (req, res) => {
   const newUserRandomID = generateRandomString();
   const newUserEmail = req.body.email;
-  const newUserPassword = req.body.password;
+  const newUserPassword = bcrypt.hashSync(req.body.password, 10);
 
   if (!newUserEmail || !newUserPassword) {
     console.log("empty user or password");
@@ -174,16 +175,18 @@ app.post("/login", (req, res) => {
   if (!valueLookup) {
     //  email does not exist in users object
     res.sendStatus(403);
+    return;
   }
 
-  if (valueLookup) {
-    //  email exists in users object
-    if (valueLookup.password === userPassword) {
-      res.cookie("userID", valueLookup.id);
-      res.redirect("urls");
-    }
+  //  email exists in users object but password does not match
+  if (!bcrypt.compareSync(userPassword, valueLookup.password)) {
     res.sendStatus(403);
+    return;
   }
+
+  // email exists and password matches
+  res.cookie("userID", valueLookup.id);
+  res.redirect("urls");
 
 });
 
