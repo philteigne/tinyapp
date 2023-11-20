@@ -140,7 +140,6 @@ app.get("/urls/:id", (req, res) => {
     res.send("<html><body>This is URL does not belong to you.</body></html>");
   }
 
-  console.log(analytics);
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
@@ -149,7 +148,6 @@ app.get("/urls/:id", (req, res) => {
     uniqueVisitors: Object.keys(analytics.uniqueVisitors).length,
     visitorEvents: analytics.visitorLog,
   };
-  console.log(templateVars);
 
   if (!urlDatabase.hasOwnProperty(req.params.id)) {
     res.send("<html><body>Specified shortened URL does not exist</body></html>");
@@ -253,7 +251,7 @@ app.post("/register", (req, res) => {
   const newUserEmail = req.body.email;
   const newUserPassword = bcrypt.hashSync(req.body.password, 10);
 
-  if (!newUserEmail || !newUserPassword) {
+  if (!req.body.email || !req.body.password) {
     console.log("empty user or password");
     res.sendStatus(400);
   }
