@@ -21,6 +21,8 @@ app.use(cookieSession({
 app.use(methodOverride('_method'));
 app.use(express.urlencoded({ extended: true }));
 
+
+//  DATA DECLARATIONS
 const urlDatabase = {
   b2xVn2: {
     longURL: "http://www.lighthouselabs.ca",
@@ -57,8 +59,9 @@ const users = {
   },
 };
 
-//  GET
-//  HOME PAGE
+//  ------ CRUDS ------
+
+//  --- HOME PAGE ---
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -67,12 +70,14 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-//  GET
-//  URLs
+
+//  --- URLs JSON ---
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+
+//  --- URLS ---
 app.get("/urls", (req, res) => {
 
   if (req.session.user_id === undefined) {
@@ -92,6 +97,22 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+app.post("/urls", (req, res) => {
+
+  if (req.session.user_id === undefined) {
+    res.send("<html><body>Please log in to shorten a URL</body></html>\n");
+    res.redirect("/login");
+    return;
+  }
+
+  let newGeneratedID = generateRandomString();
+  urlDatabase[newGeneratedID] = { longURL: req.body.longURL, userID: req.session.user_id };
+
+  res.redirect(`/urls/${newGeneratedID}`);
+});
+
+
+//  --- URLS/NEW ---
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: users[req.session.user_id],
@@ -106,6 +127,8 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
+
+//  --- URLS/:ID ---
 app.get("/urls/:id", (req, res) => {
 
   if (req.session.user_id === undefined) {
@@ -136,8 +159,82 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-//  GET
-//  LOGIN AND REGISTER
+app.put("/urls/:id", (req, res) => {
+  if (req.session.user_id === undefined) {
+    res.send("<html><body>If this URL belongs to you, please log in to view it.</body></html>");
+    return;
+  }
+
+  if (urlDatabase[req.params.id] === undefined) {
+    res.send("<html><body>That URL does not exist.</body></html>");
+    return;
+  }
+
+  if (urlDatabase[req.params.id].userID !== req.session.user_id) {
+    res.send("<html><body>That URL does not belong to you.</body></html>");
+    return;
+  }
+
+  urlDatabase[req.params.id].longURL = req.body.longURL;
+  res.redirect(`/urls/${req.params.id}`);
+});
+
+
+//  --- URLS/:ID/EDIT ---
+app.post("/urls/:id/edit", (req, res) => {
+  res.redirect(`/urls/${req.params.id}`);
+});
+
+
+//  --- URLS/ID/DELETE ---
+app.delete("/urls/:id/delete", (req, res) => {
+  if (req.session.user_id === undefined) {
+    res.send("<html><body>If this URL belongs to you, please log in to delete it.</body></html>");
+    return;
+  }
+
+  if (urlDatabase[req.params.id] === undefined) {
+    res.send("<html><body>That URL does not exist.</body></html>");
+    return;
+  }
+
+  if (urlDatabase[req.params.id].userID !== req.session.user_id) {
+    res.send("<html><body>That URL does not belong to you.</body></html>");
+    return;
+  }
+
+  delete(urlDatabase[req.params.id]);
+  res.redirect("/urls");
+});
+
+
+//  --- U/ID ---
+app.get("/u/:id", (req, res) => {
+
+  // COUNT TOTAL CLICKS
+  if (analytics.clickCount[req.params.id] === undefined) {
+    analytics.clickCount[req.params.id] = 0;
+  }
+  
+  analytics.clickCount[req.params.id] ++;
+
+  //  COUNT UNIQUE VISITORS
+  if (analytics.uniqueVisitors[req.session.user_id] === undefined) {
+    analytics.uniqueVisitors[req.session.user_id] = 0;
+  }
+
+  analytics.uniqueVisitors[req.session.user_id] ++;
+
+  //  TIMESTAMP OF USAGE AND VISITOR ID
+  visitorID = "visitorID_" + generateRandomString();
+
+  analytics.visitorLog[visitorID] = new Date();
+
+  res.redirect(urlDatabase[req.params.id].longURL);
+});
+
+
+//  --- REGISTER ---
 app.get("/register", (req, res) => {
   const templateVars = {
     user: users[req.session.user_id]
@@ -151,23 +248,6 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars);
 });
 
-app.get("/login", (req, res) => {
-  if (req.session.user_id !== undefined) {
-    res.redirect("urls");
-    return;
-  }
-
-  // pass through undefined if no current session
-  const templateVars = {
-    user: undefined
-  };
-
-  res.render("login", templateVars);
-});
-
-
-//  POST
-//  LOGIN AND REGISTER
 app.post("/register", (req, res) => {
   const newUserRandomID = generateRandomString();
   const newUserEmail = req.body.email;
@@ -191,9 +271,20 @@ app.post("/register", (req, res) => {
   }
 });
 
-app.post("/logout", (req, res) => {
-  req.session = null;  // kill session on logout
-  res.redirect("login");
+
+//  --- LOGIN ---
+app.get("/login", (req, res) => {
+  if (req.session.user_id !== undefined) {
+    res.redirect("urls");
+    return;
+  }
+
+  // pass through undefined if no current session
+  const templateVars = {
+    user: undefined
+  };
+
+  res.render("login", templateVars);
 });
 
 app.post("/login", (req, res) => {
@@ -219,94 +310,12 @@ app.post("/login", (req, res) => {
 
 });
 
-//  POST
-//  URLs
-app.post("/urls/:id/edit", (req, res) => {
-  res.redirect(`/urls/${req.params.id}`);
+
+//  --- LOGOUT ---
+app.post("/logout", (req, res) => {
+  req.session = null;  // kill session on logout
+  res.redirect("login");
 });
-
-app.post("/urls", (req, res) => {
-
-  if (req.session.user_id === undefined) {
-    res.send("<html><body>Please log in to shorten a URL</body></html>\n");
-    res.redirect("/login");
-    return;
-  }
-
-  let newGeneratedID = generateRandomString();
-  urlDatabase[newGeneratedID] = { longURL: req.body.longURL, userID: req.session.user_id };
-
-  res.redirect(`/urls/${newGeneratedID}`);
-});
-
-app.get("/u/:id", (req, res) => {
-
-  // COUNT TOTAL CLICKS
-  if (analytics.clickCount[req.params.id] === undefined) {
-    analytics.clickCount[req.params.id] = 0;
-  }
-  
-  analytics.clickCount[req.params.id] ++;
-
-  //  COUNT UNIQUE VISITORS
-  if (analytics.uniqueVisitors[req.session.user_id] === undefined) {
-    analytics.uniqueVisitors[req.session.user_id] = 0;
-  }
-
-  analytics.uniqueVisitors[req.session.user_id] ++;
-
-  //  TIMESTAMP OF USAGE AND VISITOR ID
-  visitorID = "visitorID_" + generateRandomString();
-
-  analytics.visitorLog[visitorID] = new Date();
-
-  res.redirect(urlDatabase[req.params.id].longURL);
-});
-
-//  PUT
-//  URLs
-app.put("/urls/:id", (req, res) => {
-  if (req.session.user_id === undefined) {
-    res.send("<html><body>If this URL belongs to you, please log in to view it.</body></html>");
-    return;
-  }
-
-  if (urlDatabase[req.params.id] === undefined) {
-    res.send("<html><body>That URL does not exist.</body></html>");
-    return;
-  }
-
-  if (urlDatabase[req.params.id].userID !== req.session.user_id) {
-    res.send("<html><body>That URL does not belong to you.</body></html>");
-    return;
-  }
-
-  urlDatabase[req.params.id].longURL = req.body.longURL;
-  res.redirect(`/urls/${req.params.id}`);
-});
-
-//  DELETE
-//  URLs
-app.delete("/urls/:id/delete", (req, res) => {
-  if (req.session.user_id === undefined) {
-    res.send("<html><body>If this URL belongs to you, please log in to delete it.</body></html>");
-    return;
-  }
-
-  if (urlDatabase[req.params.id] === undefined) {
-    res.send("<html><body>That URL does not exist.</body></html>");
-    return;
-  }
-
-  if (urlDatabase[req.params.id].userID !== req.session.user_id) {
-    res.send("<html><body>That URL does not belong to you.</body></html>");
-    return;
-  }
-
-  delete(urlDatabase[req.params.id]);
-  res.redirect("/urls");
-});
-
 
 
 //  Start server
