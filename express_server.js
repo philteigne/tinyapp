@@ -42,7 +42,7 @@ const analytics = {
     //  url_id: { user_id: number of visits }
   },
   visitorLog: {
-
+    //  visitor_id: date of visit
   },
 };
 
