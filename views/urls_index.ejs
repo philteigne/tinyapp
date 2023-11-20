@@ -25,6 +25,9 @@
           <tr>
             <th scope="col">Short URL ID</th>
             <th scope="col">Long URL</th>
+            <th scope="col">Created</th>
+            <th scope="col">Usage Count</th>
+            <th scope="col">Unique Users</th>
             <th scope="col">Edit</th>
             <th scope="col">Delete</th>
           </tr>
@@ -34,6 +37,17 @@
             <tr>
               <td><%= id %></td>
               <td><%= urls[id].longURL %></td>
+              <td><%= urls[id].creationDate %></td>
+              <% if (clickCount[id] !== undefined) { %>
+                <td><%= clickCount[id] %></td>
+                <% } else { %>
+                  <td><%= 0 %></td>
+                <% } %>
+                <% if (uniqueVisitors[id] !== undefined) { %>
+                  <td><%= Object.keys(uniqueVisitors[id]).length %></td>
+                <% } else { %>
+                  <td><%= 0 %></td>
+                <% } %>
               <td><a href="/urls/<%= id %>" class="btn btn-outline-primary">Edit</a></td>
               <td><form class="form-inline" action="/urls/<%= id %>/delete?_method=DELETE" method="POST"> <!-- action="/urls/<%= id %>/delete" -->
                   <button type="submit" class="btn btn-primary">Delete</button>
