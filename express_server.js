@@ -224,7 +224,7 @@ app.get("/u/:id", (req, res) => {
   analytics.uniqueVisitors[req.session.user_id] ++;
 
   //  TIMESTAMP OF USAGE AND VISITOR ID
-  visitorID = "visitorID_" + generateRandomString();
+  let visitorID = "visitorID_" + generateRandomString();
 
   analytics.visitorLog[visitorID] = new Date();
 
