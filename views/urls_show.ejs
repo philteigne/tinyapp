@@ -20,32 +20,10 @@
           <p class="card-text">
             Short URL ID: <a href="/u/<%= id %>"><%= id %></a>
           </p>
-          <h5 class="card-title">Amount this link has been used:</h5> 
-          <% if (clickCount !== undefined) { %>
-            <h6><%= clickCount %></h6>
-          <% } else { %>
-            <h6><%= 0 %></h6>
-          <% } %>
-          <h5 class="card-title">Amount of unique users:</h5> 
-          <% if (uniqueVisitors !== undefined) { %>
-            <h6><%= uniqueVisitors %></h6>
-          <% } else { %>
-            <h6><%= 0 %></h6>
-          <% } %>
-          <h5 class="card-title">Visitor log:</h5> 
-          <% for (let i of Object.keys(visitorEvents)) { %>
-            <tr>
-              <td><%= i %></td>
-              <td><%= visitorEvents[i] %></td>
-            </tr>
-          <% } %>
       </div>
-      <div class="card-footer text-muted"></div>
     </div>
     <div class="card text-center">
-      <div class="card-header">
-        
-      </div>
+      <div class="card-header"></div>
       <div class="card-body">
         <h5 class="card-title">Edit</h5>
         <form class="form-inline" action="/urls/<%= id %>?_method=PUT" method="POST">
@@ -62,6 +40,35 @@
       </div>
       <div class="card-footer text-muted"></div>
     </div>
+    <!-- display analytics -->
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Visitor ID : Visit Log</th>
+          <th scope="col">URL Usage</th>
+          <th scope="col">Unique Visitors</th>
+        </tr>
+      </thead>
+      <tbody>  
+        <% for (let i = 0; i < Object.keys(visitorEvents).length; i++) { %>
+          <tr>
+          <td><%= Object.keys(visitorEvents)[i] %> : <%= visitorEvents[Object.keys(visitorEvents)[i]] %></td>
+          <% if (i === 0) { %>
+            <% if (clickCount !== undefined) { %>
+            <td><%= clickCount %></td>
+            <% } else { %>
+              <td><%= 0 %></td>
+            <% } %>
+            <% if (uniqueVisitors !== undefined) { %>
+              <td><%= uniqueVisitors %></td>
+            <% } else { %>
+              <td><%= 0 %></td>
+            <% } %>
+          <% } %>
+          </tr>
+        <% } %>             
+      </tbody>
+    </table>
       
     </div>
     <!-- Bootstrap JS -->
