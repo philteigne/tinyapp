@@ -18,14 +18,16 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-    <% if (user === undefined) { %>
-      <a href="../login">Login</a>
-      <a href="../register">Register</a>
-    <% } else { %>
-    <a>Logged in as: </a><%= user.email %>
-    <form action="/logout" method="POST">
-      <button type="submit">Logout</button>
-    </form>
-    <% } %>
+    <div class="navbar-nav">
+      <% if (user === undefined) { %>
+        <a href="../login" class="btn btn-light mx-2">Login</a>
+        <a href="../register" class="btn btn-light">Register</a>
+      <% } else { %>
+      <a class="nav-item nav-link">Logged in as: <%= user.email %></a>
+      <form action="/logout" method="POST">
+        <button type="submit" class="btn btn-dark">Logout</button>
+      </form>
+      <% } %>
+    </div>
   </nav>
 </header>
