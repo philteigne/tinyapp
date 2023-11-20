@@ -88,7 +88,6 @@ app.get("/urls", (req, res) => {
 
   const templateVars = {
     user: users[req.session.user_id],
-    // ... any other vars
   };
 
   templateVars.urls = filter2DObject(urlDatabase, "userID", req.session.user_id);
@@ -105,7 +104,7 @@ app.post("/urls", (req, res) => {
   }
 
   let newGeneratedID = generateRandomString();
-  urlDatabase[newGeneratedID] = { longURL: req.body.longURL, userID: req.session.user_id };
+  urlDatabase[newGeneratedID] = { longURL: req.body.longURL, userID: req.session.user_id, creationDate: new Date() };
 
   res.redirect(`/urls/${newGeneratedID}`);
 });
@@ -151,6 +150,7 @@ app.get("/urls/:id", (req, res) => {
     clickCount: analytics.clickCount[req.params.id],
     uniqueVisitors: Object.keys(analytics.uniqueVisitors).length,
     visitorEvents: analytics.visitorLog,
+    creationDate: urlDatabase[req.params.id].creationDate,
   };
 
   if (!urlDatabase.hasOwnProperty(req.params.id)) {
@@ -178,6 +178,7 @@ app.put("/urls/:id", (req, res) => {
   }
 
   urlDatabase[req.params.id].longURL = req.body.longURL;
+  urlDatabase[req.params.id].creationDate = new Date();
   res.redirect("/urls");
 });
 
