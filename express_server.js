@@ -39,7 +39,7 @@ const analytics = {
     // url_id: number of clicks
   },
   uniqueVisitors: {
-
+    //  url_id: { user_id: number of visits }
   },
   visitorLog: {
 
@@ -88,9 +88,10 @@ app.get("/urls", (req, res) => {
 
   const templateVars = {
     user: users[req.session.user_id],
+    clickCount: analytics.clickCount,
+    uniqueVisitors: Object.keys(analytics.uniqueVisitors).length,
+    urls: filter2DObject(urlDatabase, "userID", req.session.user_id),
   };
-
-  templateVars.urls = filter2DObject(urlDatabase, "userID", req.session.user_id);
 
   res.render("urls_index", templateVars);
 });
@@ -143,12 +144,18 @@ app.get("/urls/:id", (req, res) => {
     return;
   }
 
+  let uniqueVisitorCount = 0;
+
+  if (analytics.uniqueVisitors[req.params.id] !== undefined) {
+    uniqueVisitorCount = Object.keys(analytics.uniqueVisitors[req.params.id]).length;
+  }
+
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
     user: users[req.session.user_id],
     clickCount: analytics.clickCount[req.params.id],
-    uniqueVisitors: Object.keys(analytics.uniqueVisitors).length,
+    uniqueVisitors: uniqueVisitorCount,
     visitorEvents: analytics.visitorLog,
     creationDate: urlDatabase[req.params.id].creationDate,
   };
@@ -227,11 +234,14 @@ app.get("/u/:id", (req, res) => {
   analytics.clickCount[req.params.id] ++;
 
   //  COUNT UNIQUE VISITORS
-  if (analytics.uniqueVisitors[req.session.user_id] === undefined) {
+  if (analytics.uniqueVisitors[req.params.id] === undefined) {
+    analytics.uniqueVisitors[req.params.id] = {};
+  }
+  if (analytics.uniqueVisitors[req.params.id][req.session.user_id] === undefined) {
     analytics.uniqueVisitors[req.session.user_id] = 0;
   }
 
-  analytics.uniqueVisitors[req.session.user_id] ++;
+  analytics.uniqueVisitors[req.params.id][req.session.user_id] ++;
 
   //  TIMESTAMP OF USAGE AND VISITOR ID
   let visitorID = "visitorID_" + generateRandomString();
