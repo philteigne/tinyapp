@@ -63,11 +63,11 @@ const users = {
 
 //  --- HOME PAGE ---
 app.get("/", (req, res) => {
-  res.send("Hello!");
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
+  if (req.session.user_id === undefined) {
+    res.redirect("/login");
+    return;
+  }
+  res.redirect("/urls");
 });
 
 
@@ -93,7 +93,6 @@ app.get("/urls", (req, res) => {
 
   templateVars.urls = filter2DObject(urlDatabase, "userID", req.session.user_id);
 
-  console.log("/urls", templateVars.user);
   res.render("urls_index", templateVars);
 });
 
@@ -123,7 +122,6 @@ app.get("/urls/new", (req, res) => {
     return;
   }
 
-  console.log("/urls/new", templateVars.user);
   res.render("urls_new", templateVars);
 });
 
@@ -264,7 +262,6 @@ app.post("/register", (req, res) => {
   if (!keyValueLookup(newUserEmail, "email", users) && newUserEmail && newUserPassword) {
     users[newUserRandomID] = { id: newUserRandomID, email: newUserEmail, password: newUserPassword };
     req.session.user_id = newUserRandomID;
-    console.log("users", users);
     res.redirect("urls");
   }
 });
