@@ -89,7 +89,7 @@ app.get("/urls", (req, res) => {
   const templateVars = {
     user: users[req.session.user_id],
     clickCount: analytics.clickCount,
-    uniqueVisitors: Object.keys(analytics.uniqueVisitors).length,
+    uniqueVisitors: analytics.uniqueVisitors,
     urls: filter2DObject(urlDatabase, "userID", req.session.user_id),
   };
 
