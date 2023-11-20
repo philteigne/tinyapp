@@ -81,7 +81,7 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
 
   if (req.session.user_id === undefined) {
-    res.send("<html><body>Please log in to view your shortened URLs</body></html>\n");
+    res.send("<html><body>Please log in to view your shortened URLs</body></html>");
     res.redirect("/login");
     return;
   }
@@ -130,12 +130,18 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
 
   if (req.session.user_id === undefined) {
-    res.redirect("/login");
+    res.send("<html><body>Please log in to view and edit short URLs</body></html>");
+    return;
+  }
+
+  if (urlDatabase[req.params.id] === undefined) {
+    res.send(`<html><body>Short URL ${req.params.id} does not exist</body></html>`);
     return;
   }
 
   if (req.session.user_id !== urlDatabase[req.params.id].userID) {
     res.send("<html><body>This is URL does not belong to you.</body></html>");
+    return;
   }
 
   const templateVars = {
@@ -172,7 +178,7 @@ app.put("/urls/:id", (req, res) => {
   }
 
   urlDatabase[req.params.id].longURL = req.body.longURL;
-  res.redirect(`/urls/${req.params.id}`);
+  res.redirect("/urls");
 });
 
 
@@ -206,6 +212,11 @@ app.delete("/urls/:id/delete", (req, res) => {
 
 //  --- U/ID ---
 app.get("/u/:id", (req, res) => {
+
+  if (urlDatabase[req.params.id] === undefined) {
+    res.send(`<html><body>Shortened URL ${req.params.id} does not exist</body></html>`);
+    return;
+  }
 
   // COUNT TOTAL CLICKS
   if (analytics.clickCount[req.params.id] === undefined) {
@@ -250,13 +261,14 @@ app.post("/register", (req, res) => {
   const newUserPassword = bcrypt.hashSync(req.body.password, 10);
 
   if (!req.body.email || !req.body.password) {
-    console.log("empty user or password");
-    res.sendStatus(400);
+    res.send("<html><body>Username and password must both have entries</body></html>");
+    return;
   }
 
   if (keyValueLookup(newUserEmail, "email", users)) {
     console.log("already exists", keyValueLookup(newUserEmail, "email", users));
-    res.sendStatus(400);
+    res.send("<html><body>Entered username already exists</body></html>");
+    return;
   }
 
   if (!keyValueLookup(newUserEmail, "email", users) && newUserEmail && newUserPassword) {
@@ -289,13 +301,13 @@ app.post("/login", (req, res) => {
 
   if (!valueLookup) {
     //  email does not exist in users object
-    res.sendStatus(403);
+    res.send("<html><body>No record of entered username</body></html>");
     return;
   }
 
   //  email exists in users object but password does not match
   if (!bcrypt.compareSync(userPassword, valueLookup.password)) {
-    res.sendStatus(403);
+    res.send("<html><body>Incorrect password</body></html>");
     return;
   }
 
