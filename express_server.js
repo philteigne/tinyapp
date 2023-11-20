@@ -140,7 +140,7 @@ app.get("/urls/:id", (req, res) => {
   }
 
   if (req.session.user_id !== urlDatabase[req.params.id].userID) {
-    res.send("<html><body>This is URL does not belong to you.</body></html>");
+    res.send("<html><body>This URL does not belong to you.</body></html>");
     return;
   }
 
